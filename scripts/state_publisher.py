@@ -48,7 +48,7 @@ if __name__ == '__main__':
                 tf.transformations.quaternion_from_euler(0, 0, angle+np.pi/2),
                 rospy.Time.now(),
                 'drone_body',
-                'odom'
+                'map'
                 )
 
         # Create new robot state
@@ -58,4 +58,9 @@ if __name__ == '__main__':
         height += hinc
         if height > 0.2 or height < 0:
             hinc *= -1
-        swivel += degree
+        #swivel += degree
+        swivel += degree * 5
+        angle += degree/4
+
+        # This will adjust as needed per iteration
+        loop_rate.sleep()

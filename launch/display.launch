@@ -2,4 +2,5 @@
         <param name="robot_description" command="cat $(find mydrone)/urdfs/drone.urdf" />
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
         <node name="state_publisher" pkg="mydrone" type="state_publisher.py" />
+	<node name="rviz" pkg="rviz" type="rviz" respawn="false" output="screen" args="-d $(find mydrone)/rviz/display.rviz" required="true" />
 </launch>
