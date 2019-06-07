@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<robot name="drone">
+    <link name="drone_body">
+        <origin rpy="0.0 0 0" xyz="0 0 0">
+        <geometry>
+            <mesh filename="package://my_drone/meshs/drone.dae"/>
+        </geometry>
+    </link>
+    <link name="propeller1">
+        <origin rpy="0.0 0 0" xyz="0 0 0">
+        <geometry>
+            <mesh filename="package://my_drone/meshs/propeller.dae"/>
+        </geometry>
+    </link>
+    <link name="propeller2">
+        <origin rpy="0.0 0 0" xyz="0 0 0">
+        <geometry>
+            <mesh filename="package://my_drone/meshs/propeller.dae"/>
+        </geometry>
+    </link>
+    <link name="propeller3">
+        <origin rpy="0.0 0 0" xyz="0 0 0">
+        <geometry>
+            <mesh filename="package://my_drone/meshs/propeller.dae"/>
+        </geometry>
+    </link>
+    <link name="propeller4">
+        <origin rpy="0.0 0 0" xyz="0 0 0">
+        <geometry>
+            <mesh filename="package://my_drone/meshs/propeller.dae"/>
+        </geometry>
+    </link>
+
+    <joint name="p1" type="continuous">
+        <origin xyz="0.35 0.35 0.1" />
+        <parent link="drone_body">
+        <child  link="propeller1">
+    </joint>
+    <joint name="p2" type="continuous">
+        <origin xyz="-0.35 0.35 0.1" />
+        <parent link="drone_body">
+        <child  link="propeller2">
+    </joint>
+    <joint name="p3" type="continuous">
+        <origin xyz="0.35 -0.35 0.1" />
+        <parent link="drone_body">
+        <child  link="propeller3">
+    </joint>
+    <joint name="p4" type="continuous">
+        <origin xyz="-0.35 -0.35 0.1" />
+        <parent link="drone_body">
+        <child  link="propeller4">
+    </joint>
+
+</robot>
