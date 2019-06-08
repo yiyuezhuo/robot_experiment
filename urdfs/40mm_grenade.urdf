@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<robot name="40mm_grenade">
+    <link name="grenade_body">
+	<visual>
+		<origin rpy="0.0 0 0" xyz="0 0 0"/>
+		<geometry>
+		     <mesh filename="package://mydrone/meshs/40mm_grenade.dae"/> 
+		</geometry>
+	</visual>
+    </link>
+</robot>
