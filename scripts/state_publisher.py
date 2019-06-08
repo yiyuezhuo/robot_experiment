@@ -44,7 +44,7 @@ if __name__ == '__main__':
         # send the joint state and transform
         joint_pub.publish(joint_state)
         broadcaster.sendTransform(
-                (np.cos(angle)*2, np.sin(angle)*2, 0.7),
+                (np.cos(angle)*3, np.sin(angle)*3, 1.7),
                 tf.transformations.quaternion_from_euler(0, 0, angle+np.pi/2),
                 rospy.Time.now(),
                 'drone_body',
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         if height > 0.2 or height < 0:
             hinc *= -1
         #swivel += degree
-        swivel += degree * 5
+        swivel += degree * 10
         angle += degree/4
 
         # This will adjust as needed per iteration

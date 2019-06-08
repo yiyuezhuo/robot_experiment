@@ -85,12 +85,12 @@
     </joint>
     <joint name="p2" type="continuous">
         <origin xyz="0.0 0.0 0.1" />
-	<axis xyz="0 0 1"/>
+	<axis xyz="0 0 -1"/>
         <parent link="hole2"/>
         <child  link="propeller2"/>
     </joint>
     <joint name="p3" type="continuous">
-	<axis xyz="0 0 1"/>
+	<axis xyz="0 0 -1"/>
         <origin xyz="0.0 0.0 0.1" />
         <parent link="hole3"/>
         <child  link="propeller3"/>
