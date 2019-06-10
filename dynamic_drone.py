@@ -14,7 +14,7 @@ Reference:
 """
 
 import numpy as np
-from numpy import sin,cos
+from numpy import sin,cos,arcsin
 
 class Drone:
     def __init__(self, xyz, rpy, v_xyz=(0,0,0), v_rpy=(0,0,0), 
@@ -147,16 +147,31 @@ class DroneController:
         if self.log:
             self.log_list = []
         
-    def step(self, xyz_target, rpy_target, dt):
+    def step(self, xyz_target, psi_target, dt):
         xyz, rpy = self.drone.xyz, self.drone.rpy
         phi, theta, psi = rpy
         I,m,l = self.drone.I, self.drone.m, self.drone.l
         
         a_xyz_target = self.controller_xyz.step(xyz, xyz_target, dt)
+        
+        U1 = (a_xyz_target[2] + 9.8)*m/(cos(phi)*cos(theta))
+        
+        #print(U1, a_xyz_target[0], psi, phi)
+        
+        sin_phi0 = m*(a_xyz_target[0]*sin(psi) - a_xyz_target[1]*cos(psi))/U1
+        sin_theta0 = (a_xyz_target[0]*m*cos(psi) + a_xyz_target[1]*sin(psi))/U1*cos(phi)
+        
+        #print(sin_phi0, sin_theta0)
+        
+        phi0 = arcsin(np.clip(sin_phi0, -np.pi/6, np.pi/6))
+        theta0 = arcsin(np.clip(sin_theta0, -np.pi/6, np.pi/6))
+        
+        rpy_target = np.array([phi0, theta0, psi_target])
+        
         a_rpy_target = self.controller_rpy.step(rpy, rpy_target, dt)
         
         U = np.array([
-                (a_xyz_target[2] + 9.8)*m/(cos(phi)*cos(theta)),
+                U1,
                 a_rpy_target[0] * I[0]/l,
                 a_rpy_target[1] * I[1]/l,
                 a_rpy_target[2] * I[2]/l

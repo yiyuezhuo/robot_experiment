@@ -2,7 +2,8 @@
 <robot name="drone">
     <link name="drone_body">
 	<visual>
-		<origin rpy="0.0 0 0" xyz="0 0 0"/>
+		<origin rpy="0.0 0.0 0.7853" xyz="0 0 0"/>
+        <!-- our dynamic follow + shape pattern instead of x. So we should rotate it firstly -->
 		<geometry>
 		     <mesh filename="package://mydrone/meshs/drone_body.dae"/> 
 		    <!-- <mesh filename="package://urdf_tutorial/meshes/l_finger.dae"/> -->
