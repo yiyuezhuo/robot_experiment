@@ -6,6 +6,10 @@ a simple dynamic simulation and a exciting Tiananmen scenario.
 
 ## Preview
 
+<img src="preview/output2.webp">
+
+
+
 ## Install
 
 ```
