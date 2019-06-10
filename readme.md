@@ -12,5 +12,5 @@ a simple dynamic simulation and a exciting Tiananmen scenario.
 git clone https://github.com/yiyuezhuo/robot_experiment.git
 mv robot_experiment mydrone
 cd mydrone
-echo "export PATH=\$PATH:$(pwd)" >> ~/.bashrc
+echo "export PYTHONPATH=\$PYTHONPATH:$(pwd)" >> ~/.bashrc
 ```

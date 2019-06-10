@@ -44,7 +44,7 @@ if __name__ == '__main__':
         # send the joint state and transform
         joint_pub.publish(joint_state)
         broadcaster.sendTransform(
-                (np.cos(angle)*3, np.sin(angle)*3, 1.7),
+                (np.cos(angle)*3, np.sin(angle)*3, 2.7),
                 tf.transformations.quaternion_from_euler(0, 0, angle+np.pi/2),
                 rospy.Time.now(),
                 'drone_body',
@@ -53,8 +53,8 @@ if __name__ == '__main__':
         broadcaster.sendTransform(
                 #(np.cos(angle)*3, np.sin(angle)*3, 1.7),
                 #tf.transformations.quaternion_from_euler(0, 0, angle+np.pi/2),
-                (0.0, 0.0, -1.0),
-                tf.transformations.quaternion_from_euler(0, 0, 0),
+                (0.0, 0.0, -0.3),
+                tf.transformations.quaternion_from_euler(-np.pi, 0, 0),
                 rospy.Time.now(),
                 'grenade_body',
                 'drone_body'

@@ -2,7 +2,7 @@
 <robot name="drone">
     <link name="drone_body">
 	<visual>
-		<origin rpy="0.0 0.0 0.7853" xyz="0 0 0"/>
+		<origin rpy="0.0 0.0 0.0" xyz="0 0 0"/>
         <!-- our dynamic follow + shape pattern instead of x. So we should rotate it firstly -->
 		<geometry>
 		     <mesh filename="package://mydrone/meshs/drone_body.dae"/> 
@@ -58,22 +58,22 @@
     </link>
 
     <joint name="l1" type="fixed">
-        <origin xyz="0.5 0.0 0.0" />
+        <origin xyz="0.35 0.35 0.0" />
         <parent link="drone_body"/>
         <child  link="hole1"/>
     </joint>
     <joint name="l2" type="fixed">
-        <origin xyz="0.0 0.5 0.0" />
+        <origin xyz="-0.35 0.35 0.0" />
         <parent link="drone_body"/>
         <child  link="hole2"/>
     </joint>
     <joint name="l3" type="fixed">
-        <origin xyz="-0.5 0.0 0.0" />
+        <origin xyz="0.35 -0.35 0.0" />
         <parent link="drone_body"/>
         <child  link="hole3"/>
     </joint>
     <joint name="l4" type="fixed">
-        <origin xyz="0.0 -0.5 0.0" />
+        <origin xyz="-0.35 -0.35 0.0" />
         <parent link="drone_body"/>
         <child  link="hole4"/>
     </joint>

@@ -13,6 +13,8 @@ Reference:
     can't read content such as wikipedia even.
 """
 
+from __future__ import division
+
 import numpy as np
 from numpy import sin,cos,arcsin
 
@@ -176,7 +178,9 @@ class DroneController:
                 a_rpy_target[1] * I[1]/l,
                 a_rpy_target[2] * I[2]/l
                 ])
-        omega2 = self.U_to_omega2 @ U
+        #omega2 = self.U_to_omega2 @ U
+        # Provide shit python2 support required by ROS
+        omega2 = self.U_to_omega2.dot(U)
         
         omega = np.sqrt(np.clip(omega2, 0, np.inf))
         #print(U, omega2, omega)
