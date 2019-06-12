@@ -160,12 +160,21 @@ class DroneController:
         
         #print(U1, a_xyz_target[0], psi, phi)
         
+        '''
         sin_phi0 = m*(a_xyz_target[0]*sin(psi) - a_xyz_target[1]*cos(psi))/U1
-        sin_theta0 = (a_xyz_target[0]*m*cos(psi) + a_xyz_target[1]*sin(psi))/U1*cos(phi)
+        #sin_theta0 = (a_xyz_target[0]*m*cos(psi) + a_xyz_target[1]*sin(psi))/U1*cos(phi)
+        #sin_theta0 = (a_xyz_target[0]*m*cos(psi) + a_xyz_target[1]*sin(psi))/(U1*cos(phi))
+        sin_theta0 = (a_xyz_target[0]*m*cos(psi) + a_xyz_target[1]*sin(psi))/(U1*cos(np.arcsin(sin_phi0)))
         
         #print(sin_phi0, sin_theta0)
         
         phi0 = arcsin(np.clip(sin_phi0, -np.pi/6, np.pi/6))
+        theta0 = arcsin(np.clip(sin_theta0, -np.pi/6, np.pi/6))
+        '''
+        
+        sin_phi0 = m*(a_xyz_target[0]*sin(psi) - a_xyz_target[1]*cos(psi))/U1
+        phi0 = arcsin(np.clip(sin_phi0, -np.pi/6, np.pi/6))
+        sin_theta0 = (a_xyz_target[0]*m*cos(psi) + a_xyz_target[1]*sin(psi))/(U1*cos(phi0))
         theta0 = arcsin(np.clip(sin_theta0, -np.pi/6, np.pi/6))
         
         rpy_target = np.array([phi0, theta0, psi_target])

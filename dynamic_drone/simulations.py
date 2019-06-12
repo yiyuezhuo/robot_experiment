@@ -58,7 +58,7 @@ def simulation(drone_controller, xyz_target_arr, psi_arr, dt = 1/30, show=True, 
                  "v_r","v_p","v_y",
                  'a_X','a_Y','a_Z',
                  'a_r','a_p','a_y',
-                 'omega1','omega2','omega3','omega3']
+                 'omega1','omega2','omega3','omega4']
     arr_list = [xyz_arr[:,0], xyz_arr[:,1], xyz_arr[:,2],
                 rpy_arr[:,0], rpy_arr[:,1], rpy_arr[:,2],
                 v_xyz_arr[:,0], v_xyz_arr[:,1], v_xyz_arr[:,2],
@@ -85,3 +85,21 @@ def simulation(drone_controller, xyz_target_arr, psi_arr, dt = 1/30, show=True, 
             'a_xyz_arr': a_xyz_arr,
             'a_rpy_arr': a_rpy_arr,
             'omega_arr': omega_arr}
+
+def plot_pretty(res):
+    fig, axs = plt.subplots(nrows=7, ncols=4, figsize=(12,24))
+    i=0
+    for prefix in ['','v_','a_']:
+        for target in ['xyz','rpy']:
+            key = '{}{}_arr'.format(prefix, target)
+            arr = res[key]
+            for j in range(3):
+                axs[i,j].plot(arr[:,j])
+                axs[i,j].set_title('{}{}-{}'.format(prefix, target, target[j]))
+            i+=1
+    
+    for j in range(4):
+        axs[6,j].plot(res['omega_arr'][:,j])
+        axs[6,j].set_title('omega {}'.format(j+1))
+        
+        
