@@ -35,10 +35,10 @@ class Drone:
             l: length of arm
             d: drag coefficient of rotor
         '''
-        self.xyz = xyz
-        self.rpy = rpy
-        self.v_xyz = v_xyz
-        self.v_rpy = v_rpy
+        self.xyz = np.array(xyz,dtype=float)
+        self.rpy = np.array(rpy,dtype=float)
+        self.v_xyz = np.array(v_xyz,dtype=float)
+        self.v_rpy = np.array(v_rpy,dtype=float)
         
         self.I = I
         self.m = m
@@ -89,6 +89,8 @@ class Drone:
         
         self.xyz = self.xyz + (self.v_xyz + a_xyz/2) * dt
         self.rpy = self.rpy + (self.v_rpy + a_rpy/2) * dt
+        #self.xyz = self.xyz + self.v_xyz * dt + a_xyz/2 * dt**2
+        #self.rpy = self.rpy + self.v_rpy * dt + a_rpy/2 * dt**2
         
         self.v_xyz = self.v_xyz + a_xyz * dt
         self.v_rpy = self.v_rpy + a_rpy * dt
@@ -148,29 +150,17 @@ class DroneController:
         self.log = log
         if self.log:
             self.log_list = []
-        
+    
     def step(self, xyz_target, psi_target, dt):
         xyz, rpy = self.drone.xyz, self.drone.rpy
+        #dprint('true',xyz, rpy)
         phi, theta, psi = rpy
         I,m,l = self.drone.I, self.drone.m, self.drone.l
         
         a_xyz_target = self.controller_xyz.step(xyz, xyz_target, dt)
         
         U1 = (a_xyz_target[2] + 9.8)*m/(cos(phi)*cos(theta))
-        
-        #print(U1, a_xyz_target[0], psi, phi)
-        
-        '''
-        sin_phi0 = m*(a_xyz_target[0]*sin(psi) - a_xyz_target[1]*cos(psi))/U1
-        #sin_theta0 = (a_xyz_target[0]*m*cos(psi) + a_xyz_target[1]*sin(psi))/U1*cos(phi)
-        #sin_theta0 = (a_xyz_target[0]*m*cos(psi) + a_xyz_target[1]*sin(psi))/(U1*cos(phi))
-        sin_theta0 = (a_xyz_target[0]*m*cos(psi) + a_xyz_target[1]*sin(psi))/(U1*cos(np.arcsin(sin_phi0)))
-        
-        #print(sin_phi0, sin_theta0)
-        
-        phi0 = arcsin(np.clip(sin_phi0, -np.pi/6, np.pi/6))
-        theta0 = arcsin(np.clip(sin_theta0, -np.pi/6, np.pi/6))
-        '''
+                
         
         sin_phi0 = m*(a_xyz_target[0]*sin(psi) - a_xyz_target[1]*cos(psi))/U1
         phi0 = arcsin(np.clip(sin_phi0, -np.pi/6, np.pi/6))
@@ -199,3 +189,118 @@ class DroneController:
         a_xyz, a_rpy = self.drone.step(omega, dt)
         
         return omega, a_xyz, a_rpy
+
+class DroneControllerNoised:
+    def __init__(self, drone, controller_xyz, controller_rpy, observer, log=True):
+        self.drone = drone
+        self.controller_xyz = controller_xyz
+        self.controller_rpy = controller_rpy
+        
+        b,l,d = self.drone.b, self.drone.l, self.drone.d
+        mat = np.array([[b,b,b,b],
+                        [0,-l*b,0,l*b],
+                        [-l*b,0,l*b,0],
+                        [-d,d,-d,d]])
+        self.U_to_omega2 = np.linalg.inv(mat)
+        
+        self.log = log
+        if self.log:
+            self.log_list = []
+            
+        self.observer = observer
+        
+    def step(self, xyz_target, psi_target, dt):
+        #xyz, rpy = self.drone.xyz, self.drone.rpy
+        xyz,rpy = self.observer.observe()
+        #print(xyz,rpy)
+        
+        phi, theta, psi = rpy
+        I,m,l = self.drone.I, self.drone.m, self.drone.l
+        
+        a_xyz_target = self.controller_xyz.step(xyz, xyz_target, dt)
+        
+        U1 = (a_xyz_target[2] + 9.8)*m/(cos(phi)*cos(theta))
+                
+        
+        sin_phi0 = m*(a_xyz_target[0]*sin(psi) - a_xyz_target[1]*cos(psi))/U1
+        phi0 = arcsin(np.clip(sin_phi0, -np.pi/6, np.pi/6))
+        sin_theta0 = (a_xyz_target[0]*m*cos(psi) + a_xyz_target[1]*sin(psi))/(U1*cos(phi0))
+        theta0 = arcsin(np.clip(sin_theta0, -np.pi/6, np.pi/6))
+        
+        rpy_target = np.array([phi0, theta0, psi_target])
+        
+        a_rpy_target = self.controller_rpy.step(rpy, rpy_target, dt)
+        
+        U = np.array([
+                U1,
+                a_rpy_target[0] * I[0]/l,
+                a_rpy_target[1] * I[1]/l,
+                a_rpy_target[2] * I[2]/l
+                ])
+        #omega2 = self.U_to_omega2 @ U
+        # Provide shit python2 support required by ROS
+        omega2 = self.U_to_omega2.dot(U)
+        
+        omega = np.sqrt(np.clip(omega2, 0, np.inf))
+        #print(U, omega2, omega)
+        if self.log:
+            self.log_list.append((U, omega2, omega))
+        
+        a_xyz, a_rpy = self.drone.step(omega, dt)
+        
+        self.observer.update(self.drone.xyz, self.drone.rpy,
+                             self.drone.v_xyz, self.drone.v_rpy,
+                             a_xyz, a_rpy)
+        #print(self.observer.observe())
+        
+        return omega, a_xyz, a_rpy
+
+class Observer:
+    '''
+    Observer class wrap noise generator and filter
+    '''
+    def __init__(self, filter, sigma_xyz = 0.0, sigma_rpy = 0.0, 
+                 sigma_v_xyz=0.0, sigma_v_rpy = 0.0,
+                 sigma_a_xyz=0.0, sigma_a_rpy = 0.0,
+                 rpy_ideal = None):
+        
+        self.filter = filter
+        
+        if rpy_ideal is None:
+            self.rpy_ideal = np.zeros(3)
+        else:
+            self.rpy_ideal = rpy_ideal
+        
+        self.sigma_xyz = sigma_xyz
+        self.sigma_rpy = sigma_rpy
+        self.sigma_v_xyz = sigma_v_xyz
+        self.sigma_v_rpy = sigma_v_rpy
+        self.sigma_a_xyz = sigma_a_xyz
+        self.sigma_a_rpy = sigma_a_rpy
+        
+    def observe(self):
+        '''
+        return filtered value of xyz, rpy
+        '''
+        X = self.filter.X
+        return X[:3],self.rpy_ideal
+    
+    def apply_noise(self, xyz, rpy, v_xyz, v_rpy, a_xyz, a_rpy):
+        xyz = xyz + np.random.randn(*xyz.shape) * self.sigma_xyz
+        rpy = rpy + np.random.randn(*rpy.shape) * self.sigma_rpy
+        v_xyz = v_xyz + np.random.randn(*v_xyz.shape) * self.sigma_v_xyz
+        v_rpy = v_rpy + np.random.randn(*v_rpy.shape) * self.sigma_v_rpy
+        a_xyz = a_xyz + np.random.randn(*a_xyz.shape) * self.sigma_a_xyz
+        a_rpy = a_rpy + np.random.randn(*a_rpy.shape) * self.sigma_a_rpy
+        return xyz, rpy, v_xyz, v_rpy, a_xyz, a_rpy
+    
+    def update(self, xyz, rpy, v_xyz, v_rpy, a_xyz, a_rpy):
+        xyz, rpy, v_xyz, v_rpy, a_xyz, a_rpy = self.apply_noise(
+                xyz, rpy, v_xyz, v_rpy, a_xyz, a_rpy)
+        
+        u = a_xyz
+        z = np.concatenate([xyz, v_xyz], axis=0)
+        self.filter.step(u,z)
+        
+        self.rpy_ideal = rpy
+        
