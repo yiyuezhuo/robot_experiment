@@ -14,6 +14,8 @@ from dynamic_drone.dynamic_drone import Drone, PIDControler, DroneController
 from sensor_msgs.msg import JointState
 import rospy
 #from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Path
 import tf
 
 import numpy as np
@@ -22,7 +24,7 @@ import numpy as np
 degree = np.pi / 180
 broadcaster = tf.TransformBroadcaster()
 joint_pub = rospy.Publisher('joint_states', JointState, queue_size=1)
-
+path_pub = rospy.Publisher('trajectory', Path, queue_size=1)
 
 class DroneRobot:
     def __init__(self, drone_controller, swivel=0.0, swivel_speed = 10.0):
@@ -31,6 +33,10 @@ class DroneRobot:
         self.joint_pub = rospy.Publisher('joint_states', JointState, queue_size=1)
         self.swivel = swivel
         self.swivel_speed = swivel_speed
+
+        self.path = Path()
+        self.path.header.stamp = rospy.Time.now()
+        self.path.header.frame_id = 'map'
         
     def step(self, xyz_target, psi_target, dt):
         omega, a_xyz, a_rpy = self.drone_controller.step(xyz_target, psi_target, dt)
@@ -60,6 +66,23 @@ class DroneRobot:
                 'drone_body'
                 )
 
+        pose = PoseStamped()
+        pose.header.stamp = rospy.Time.now()
+        pose.header.frame_id = 'map'
+
+        pose.pose.position.x = xyz[0]
+        pose.pose.position.y = xyz[1]
+        pose.pose.position.z = xyz[2]
+
+        quat = tf.transformations.quaternion_from_euler(*rpy)
+        pose.pose.orientation.x = quat[0]
+        pose.pose.orientation.y = quat[1]
+        pose.pose.orientation.z = quat[2]
+        pose.pose.orientation.w = quat[3]
+
+        self.path.poses.append(pose)
+        path_pub.publish(self.path)
+
         self.swivel += degree * self.swivel_speed
         
     def run(self, xyz_target_arr, psi_arr, loop_rate, dt = 1/30,
@@ -84,7 +107,7 @@ class DroneRobot:
 
     
 if __name__ == '__main__':
-    rospy.init_node('drone_publisher')
+    rospy.init_node('path_publisher')
 
     while not rospy.is_shutdown():
         xyz = np.array([10.0, 0.0, 0.0])
@@ -112,4 +135,5 @@ if __name__ == '__main__':
         fps = 30
         loop_rate = rospy.Rate(fps)
         drone_robot.run(xyz_target_arr, psi_target_arr, loop_rate, dt=1/fps,keep=False)
+        break # run only once
 

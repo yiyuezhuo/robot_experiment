@@ -1,0 +1,10 @@
+<launch>
+    <param name="robot_description" command="cat $(find mydrone)/urdfs/drone.urdf" />
+    <param name="robot_description_grenade" command="cat $(find mydrone)/urdfs/40mm_grenade.urdf" />
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+    <node name="state_publisher" pkg="mydrone" type="path_publisher.py" />
+
+	<node name="background_drawer" pkg="mydrone" type="draw_background.py" />
+	<node name="rviz" pkg="rviz" type="rviz" respawn="false" output="screen" args="-d $(find mydrone)/rviz/display_grenade.rviz" required="true" />
+</launch>
