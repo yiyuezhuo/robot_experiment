@@ -8,7 +8,8 @@ from __future__ import division
 
 import numpy as np
 
-class KalmanFilter:
+class KalmanFilter(object):
+    # add object to support ROS python2
     def __init__(self, F, B, H, Q, R, X=None, P=None):
         '''
         F: state transition matrix
@@ -92,7 +93,8 @@ class KalmanFilterPosition(KalmanFilter):
         R[lt, lt] = T*sigma3**2
         R[rb, rb] = T*sigma4**2
         
-        super().__init__(F,B,H,Q,R,X=X,P=P)
+        #super().__init__(F,B,H,Q,R,X=X,P=P) # replace it with below one to support ROS python2
+        super(KalmanFilterPosition, self).__init__(F,B,H,Q,R,X=X,P=P)
         
 class DummyFilter:
     def __init__(self):
