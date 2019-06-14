@@ -9,13 +9,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def simulation(drone_controller, xyz_target_arr, psi_arr, dt = 1/30, show=True, callback=None):
+def simulation(drone_controller, xyz_target_arr, psi_arr, 
+               dt = 1/30, show=True, callback=None,
+               length = None):
     '''
     omega_arr: length x 4 matrix
     '''
-    
-    assert xyz_target_arr.shape[0] == psi_arr.shape[0]
-    length = xyz_target_arr.shape[0]
+    if not hasattr(xyz_target_arr, '__call__') and not hasattr(xyz_target_arr, '__call__'):
+        assert xyz_target_arr.shape[0] == psi_arr.shape[0]
+        length = xyz_target_arr.shape[0]
+    else:
+        assert length is not None
     
     #length = omega_arr.shape[0]
     xyz_arr = np.zeros([length, 3])
@@ -27,18 +31,25 @@ def simulation(drone_controller, xyz_target_arr, psi_arr, dt = 1/30, show=True, 
     omega_arr = np.zeros([length, 4])
     
     #dt=1/30
+    drone = drone_controller.drone
     
     for i in range(length):
         #omega = np.array([1.0, 1.0, 1.0, 1.0]) * 2
         #omega = omega_arr[i]
         #a_xyz, a_rpy = drone.step(omega, dt)
         
-        xyz_target = xyz_target_arr[i]
-        psi_target = psi_arr[i]
+        if hasattr(xyz_target_arr, '__call__'):
+            xyz_target = xyz_target_arr(drone.xyz, drone.rpy, drone.v_xyz, drone.rpy)
+        else:
+            xyz_target = xyz_target_arr[i]
+        if hasattr(psi_arr, '__call__'):
+            psi_target = psi_arr(drone.xyz, drone.rpy, drone.v_xyz, drone.rpy)
+        else:
+            psi_target = psi_arr[i]
         
         omega, a_xyz, a_rpy = drone_controller.step(xyz_target, psi_target, dt)
         
-        drone = drone_controller.drone
+        
         
         xyz_arr[i,:] = drone.xyz
         rpy_arr[i,:] = drone.rpy

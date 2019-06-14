@@ -17,4 +17,6 @@ git clone https://github.com/yiyuezhuo/robot_experiment.git
 mv robot_experiment mydrone
 cd mydrone
 echo "export PYTHONPATH=\$PYTHONPATH:$(pwd)" >> ~/.bashrc
+source ~/.bashrc
+roslaunch mydrone display_path.launch
 ```
