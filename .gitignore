@@ -2,3 +2,4 @@
 *.mp4
 *.swp
 .ipynb_checkpoints
+.vscode

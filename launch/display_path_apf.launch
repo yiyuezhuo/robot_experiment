@@ -5,6 +5,6 @@
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
     <node name="state_publisher" pkg="mydrone" type="path_publisher_apf.py" />
 
-	<node name="background_drawer" pkg="mydrone" type="draw_background.py" />
+	<node name="background_drawer" pkg="mydrone" type="draw_background_one_tank.py" />
 	<node name="rviz" pkg="rviz" type="rviz" respawn="false" output="screen" args="-d $(find mydrone)/rviz/display_grenade.rviz" required="true" />
 </launch>

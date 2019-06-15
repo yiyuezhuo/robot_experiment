@@ -86,13 +86,28 @@ class DroneRobot:
         self.swivel += degree * self.swivel_speed
         
     def run(self, xyz_target_arr, psi_arr, loop_rate, dt = 1/30,
-            keep = True):
-        assert xyz_target_arr.shape[0] == psi_arr.shape[0]
-        length = xyz_target_arr.shape[0]
+            keep = True, length = None):
+        #assert xyz_target_arr.shape[0] == psi_arr.shape[0]
+        #length = xyz_target_arr.shape[0]
+        if not hasattr(xyz_target_arr, '__call__') and not hasattr(xyz_target_arr, '__call__'):
+            assert xyz_target_arr.shape[0] == psi_arr.shape[0]
+            length = xyz_target_arr.shape[0]
+        else:
+            assert length is not None
+
         
         for i in range(length):        
-            xyz_target = xyz_target_arr[i]
-            psi_target = psi_arr[i]
+            #xyz_target = xyz_target_arr[i]
+            #psi_target = psi_arr[i]
+            if hasattr(xyz_target_arr, '__call__'):
+                xyz_target = xyz_target_arr(drone.xyz, drone.rpy, drone.v_xyz, drone.rpy)
+            else:
+                xyz_target = xyz_target_arr[i]
+            if hasattr(psi_arr, '__call__'):
+                psi_target = psi_arr(drone.xyz, drone.rpy, drone.v_xyz, drone.rpy)
+            else:
+                psi_target = psi_arr[i]
+
             
             self.step(xyz_target, psi_target, dt)
             
@@ -146,6 +161,6 @@ if __name__ == '__main__':
         
         fps = 30
         loop_rate = rospy.Rate(fps)
-        drone_robot.run(xyz_target_arr, psi_target_arr, loop_rate, dt=1/fps,keep=False)
+        drone_robot.run(xyz_target_arr, psi_target_arr, loop_rate, dt=1/fps,keep=False, length=length)
         break # run only once
 
